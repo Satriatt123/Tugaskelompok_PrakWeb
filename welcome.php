@@ -1,5 +1,6 @@
 <?php
 session_start();
+$nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'User';
 $jk = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
 
 $warna_background = "#a561ff";
@@ -8,7 +9,7 @@ $warna_h1 = "#ffffff";
 $warna_navbar = "#343a40"; 
 $warna_teks_navbar = "#ffffff";
 $warna_text_button = "#ffffff";
-$teks_sapaan = "Selamat datang";
+$teks_sapaan = "Selamat datang ";
 
 if ($jk == 'Perempuan'){
     $warna_background = "#ffc0cb";
@@ -17,7 +18,7 @@ if ($jk == 'Perempuan'){
     $warna_h1 = "#000000";
     $warna_navbar = "#ffffff";
     $warna_teks_navbar = "#000000";
-    $teks_sapaan = "Halo, Cantik";
+    $teks_sapaan = " Cantik";
     $gambar_welcome = "asset\perempuan.webp";
 }
 elseif ($jk == 'Laki-Laki'){
@@ -27,7 +28,7 @@ elseif ($jk == 'Laki-Laki'){
     $warna_h1 = "#ffffff";
     $warna_navbar = "#000000";
     $warna_teks_navbar = "#ffffff";
-    $teks_sapaan = "Halo, Ganteng";
+    $teks_sapaan = " Ganteng";
     $gambar_welcome = "asset\image_5b92aac0.png";
 }
 
@@ -106,7 +107,7 @@ elseif ($jk == 'Laki-Laki'){
 
     <div class="container-welcome d-flex flex-column align-items-center justify-content-center">
         <div class="text-center mb-5 mt-5">
-            <h1 style="color: <?php echo $color_h1;?>"><?php echo $teks_sapaan . " Selamat Datang di"?> <span>ReLife</span></h1>
+            <h1 style="color: <?php echo $color_h1;?>"><?php echo "Halo " . $nama . $teks_sapaan . " Selamat Datang di"?> <span>ReLife</span></h1>
             <p class="text-light">Langkah awal menuju versi terbaik dirimu dimulai di sini.</p>
         </div>
 
