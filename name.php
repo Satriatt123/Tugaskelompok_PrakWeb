@@ -27,7 +27,7 @@
                             <p class="text-light small">Boleh kami tahu siapa nama Anda?</p>
                         </div>
                         
-                        <form action="goal.php" method="POST">
+                        <form action="jeniskelamin.php" method="POST">
     <div class="mb-4">
         <label class="form-label text-white small">Nama Lengkap</label>
         <input type="text" name="nama" class="form-control custom-input" placeholder="Masukkan nama Anda" required>

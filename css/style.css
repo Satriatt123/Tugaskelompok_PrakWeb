@@ -1,6 +1,5 @@
 body {
     font-family: 'Poppins', sans-serif;
-    background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url("../asset/Gemini_Generated_Image_sf6argsf6argsf6a.png");
     background-size: cover;
     background-attachment: fixed;
     background-position: center;
@@ -8,133 +7,21 @@ body {
     margin: 0;
 }
 
-.logo-img {
-    width: 50px; 
-    height: 50px; 
-    border-radius: 8px;
-    object-fit: cover;
+ul li{
+    float: left;
 }
 
-.navbar-brand {
-    font-weight: 700;
-    letter-spacing: 2px;
-    color: #fff !important;
+ul li a {
+    display:block;
+    padding: 14px 16px;
+    text-decoration: none;
+    text-align:center;
 }
 
-.navbar-brand span {
-    color: #0dcaf0;
+ul li a:hover {
+    color: #ffc0cb;
 }
 
-.auth-section {
-    min-height: 100vh;
-}
-
-.glass-card {
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    border-radius: 25px;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
-}
-
-.custom-input {
-    background: rgba(255, 255, 255, 0.15) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    color: #fff !important;
-    padding: 12px 15px;
-    border-radius: 12px;
-}
-
-.custom-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
-}
-
-.custom-input:focus {
-    background: rgba(255, 255, 255, 0.25) !important;
-    box-shadow: 0 0 10px rgba(13, 202, 240, 0.3);
-    border-color: #0dcaf0 !important;
-}
-
-.btn-info {
-    transition: all 0.3s ease;
-    border-radius: 12px;
-}
-
-.btn-info:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(13, 202, 240, 0.4);
-    background-color: #0baccc;
-}
-
-.container-welcome {
-    min-height: 100vh;
-    padding-top: 50px;
-    padding-bottom: 50px;
-}
-
-.glass-card-welcome {
-    background: rgba(255, 255, 255, 0.1) !important;
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    transition: transform 0.3s ease, border-color 0.3s ease;
-}
-
-.glass-card-welcome:hover {
-    transform: translateY(-10px);
-    border-color: #0dcaf0 !important;
-}
-
-.glass-card-welcome img {
-    height: 400px;
-    object-fit: cover;
-    filter: brightness(0.9);
-}
-
-.card-group {
-    border-radius: 25px;
-    overflow: hidden;
-    gap: 15px; 
-}
-
-.btn-outline-info {
-    border: 1px solid #0dcaf0;
-    border-radius: 8px;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-info:hover {
-    background-color: #0dcaf0;
-    color: white !important;
-}
-
-.btn-outline-light {
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 15px;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-light:hover {
-    background: rgba(255, 255, 255, 0.15);
-    border-color: #0dcaf0;
-}
-
-.btn-check:checked + .btn-outline-light {
-    background-color: #0dcaf0 !important;
-    border-color: #0dcaf0 !important;
-    color: white !important;
-    transform: scale(1.02);
-}
-
-@media (max-width: 768px) {
-    .card-group {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-    }
-    .glass-card-welcome {
-        border-radius: 20px !important;
-    }
+h1 {
+    font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;
 }

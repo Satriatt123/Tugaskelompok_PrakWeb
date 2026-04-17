@@ -15,11 +15,14 @@ $nama = isset($_POST['nama']) ? $_POST['nama'] : 'Teman';
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg fixed-top">
-        <div class="container">
-            <a class="navbar-brand" href="#">RE<span>LIFE</span></a>
-        </div>
-    </nav>
+            <ul>
+                <li> <a href="#">RE<span>LIFE</span></a></li>  
+                <li style="float:right"><a href="">Contact Us</a></li>
+                <li style="float:right"> <a href="">Blog</a></li>
+                <li style="float:right"> <a href="">Team</a></li>
+                <li style="float:right"> <a href="">About</a></li>
+                <li style="float:right"> <a href="">Home</a></li>
+            </ul>
 
     <div class="auth-section d-flex align-items-center justify-content-center">
         <div class="container">
