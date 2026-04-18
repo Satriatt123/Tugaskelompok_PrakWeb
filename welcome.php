@@ -3,35 +3,35 @@ session_start();
 $nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'User';
 $jk = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
 
-$warna_background = "#a561ff";
-$warna_button = "#6c757d";
+$warna_background = "linear-gradient(135deg, #a561ff 0%, #6c5ce7 100%)";
+$warna_button = "#2d3436";
+$warna_teks_button = "#ffffff";
 $warna_h1 = "#ffffff";
-$warna_navbar = "#343a40"; 
+$warna_navbar = "rgba(0, 0, 0, 0.2)"; 
 $warna_teks_navbar = "#ffffff";
-$warna_text_button = "#ffffff";
-$teks_sapaan = "Selamat datang ";
+$teks_sapaan = " Selamat datang ";
+$gambar_welcome = "asset/default.webp"; // Pastikan file ada
 
 if ($jk == 'Perempuan'){
-    $warna_background = "#ffc0cb";
+    $warna_background = "linear-gradient(135deg, #ffc0cb 0%, #ff9a9e 100%)";
     $warna_button = "#ffffff";
-    $warna_teks_button = "#000000";
-    $warna_h1 = "#000000";
-    $warna_navbar = "#ffffff";
-    $warna_teks_navbar = "#000000";
-    $teks_sapaan = " Cantik";
-    $gambar_welcome = "asset\perempuan.webp";
+    $warna_teks_button = "#ff3bc4";
+    $warna_h1 = "#2d3436";
+    $warna_navbar = "rgba(255, 255, 255, 0.4)";
+    $warna_teks_navbar = "#2d3436";
+    $teks_sapaan = " Cantik ✨";
+    $gambar_welcome = "asset\pexels-shvets-production-8007162.jpg";
 }
 elseif ($jk == 'Laki-Laki'){
-    $warna_background = "#add8e6";
-    $warna_button = "#000000";
+    $warna_background = "linear-gradient(135deg, #add8e6 0%, #74b9ff 100%)";
+    $warna_button = "#2d3436";
     $warna_teks_button = "#ffffff";
     $warna_h1 = "#ffffff";
-    $warna_navbar = "#000000";
+    $warna_navbar = "rgba(0, 0, 0, 0.2)";
     $warna_teks_navbar = "#ffffff";
-    $teks_sapaan = " Ganteng";
-    $gambar_welcome = "asset\image_5b92aac0.png";
+    $teks_sapaan = " Ganteng 😎";
+    $gambar_welcome = "asset/image_5b92aac0.png";
 }
-
 ?>
 
 <!DOCTYPE html>
@@ -41,101 +41,134 @@ elseif ($jk == 'Laki-Laki'){
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to ReLife</title>
     
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
+    
     <style>
         body {
-            background-color: <?php echo $warna_background; ?> !important;
-            font-family: sans-serif;
-            transition: background-color 0.5s ease;
+            background: <?php echo $warna_background; ?> !important;
+            background-attachment: fixed;
+            font-family: 'Poppins', sans-serif;
+            color: <?php echo $warna_h1; ?>;
+            min-height: 100vh;
+            margin: 0;
         }
-        .container {
-            padding: 20px;
-            text-align:center;
+
+        .nav-custom {
+            background: <?php echo $warna_navbar; ?>;
+            backdrop-filter: blur(10px);
+            padding: 15px 50px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
+
         .nav-link-custom {
-        color: <?php echo $warna_teks_navbar; ?> !important;
-        text-decoration: none;
-        padding: 14px 20px;
-        display: block;
-        transition: 0.3s;
+            color: <?php echo $warna_teks_navbar; ?> !important;
+            font-weight: 600;
+            text-decoration: none;
+            margin-left: 20px;
+            transition: 0.3s;
         }
 
-        .nav-link-custom:hover {
-        color: <?php echo ($jk == 'Perempuan') ? '#ffc0cb' : '#add8e6'; ?> !important; 
+        .nav-link-custom:hover { opacity: 0.7; }
+
+        .container-welcome { padding: 80px 20px; }
+
+        .glass-card-welcome {
+            background: rgba(255, 255, 255, 0.2) !important;
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            border-radius: 20px !important;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            margin: 10px;
         }
 
-        .btn-continue {
-        margin-top: 0;
-        background-color: <?php echo $warna_button; ?>;
-        width: 100%;
-        max-width: 200px;
-        text-decoration: none;
-        color: <?php echo $warna_teks_button; ?> !important;
-        border: none;
-        padding: 15px 50px;
-        border-radius: 8px;
-        font-weight: 600;
-        display: inline-block; 
-        transition: all 0.3s ease;
-        }
-
-        .btn-continue:hover {
-        color: <?php echo ($jk == 'Perempuan') ? '#ffc0cb' : '#add8e6'; ?> !important;
+        .glass-card-welcome:hover {
+            transform: translateY(-10px);
         }
 
         .card-img-top {
-        height: 450px;
-        object-fit: cover;
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            height: 300px;
+            object-fit: cover;
         }
-    </style>
 
+        .card-body p {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: <?php echo ($jk == 'Perempuan') ? '#2d3436' : '#ffffff'; ?>;
+        }
+
+        .btn-continue {
+            background-color: <?php echo $warna_button; ?>;
+            color: <?php echo $warna_teks_button; ?> !important;
+            padding: 15px 60px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: inline-block;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .btn-continue:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+
+        h1 span { font-weight: 700; text-decoration: underline; }
+    </style>
 </head>
 <body>
 
-   
-  <ul style="list-style-type: none; width: 100%; margin:0; padding: 0; overflow: hidden; background-color: <?php echo $warna_navbar; ?>">
-                <li> <a class="nav-link-custom" href="#">RE<span>LIFE</span></a></li>  
-                <li style="float:right"> <a class="nav-link-custom" href="">Contact Us</a></li>
-                <li style="float:right"> <a class="nav-link-custom" href="">Blog</a></li>
-                <li style="float:right"> <a class="nav-link-custom" href="">Team</a></li>
-                <li style="float:right"> <a class="nav-link-custom" href="">About</a></li>
-                <li style="float:right"> <a class="nav-link-custom" href="">Home</a></li>
-            </ul>
+    <nav class="navbar navbar-expand-lg nav-custom">
+        <div class="container-fluid">
+            <a class="nav-link-custom" href="#" style="font-size: 1.5rem;">RE<span>LIFE</span></a>
+            <div class="ms-auto">
+                <a class="nav-link-custom d-none d-md-inline" href="">Home</a>
+                <a class="nav-link-custom d-none d-md-inline" href="">About</a>
+                <a class="nav-link-custom" href="login.php">Logout</a>
+            </div>
+        </div>
+    </nav>
 
-    <div class="container-welcome d-flex flex-column align-items-center justify-content-center">
-        <div class="text-center mb-5 mt-5">
-            <h1 style="color: <?php echo $color_h1;?>"><?php echo "Halo " . $nama . $teks_sapaan . " Selamat Datang di"?> <span>ReLife</span></h1>
-            <p class="text-light">Langkah awal menuju versi terbaik dirimu dimulai di sini.</p>
+    <div class="container container-welcome d-flex flex-column align-items-center">
+        <div class="text-center mb-5">
+            <h1 style="font-size: 2.5rem;">Halo <?php echo $nama . ", " . $teks_sapaan; ?></h1>
+            <h3>Selamat Datang di <span>ReLife</span></h3>
+            <p style="opacity: 0.8;">Langkah awal menuju versi terbaik dirimu dimulai di sini.</p>
         </div>
 
-        <div class="container">
-            <div class="card-group shadow-lg">
+        <div class="row w-100 justify-content-center">
+            <div class="col-md-4">
                 <div class="card glass-card-welcome">
                     <img src="<?php echo $gambar_welcome; ?>" class="card-img-top" alt="Tracking">
                     <div class="card-body text-center">
-                        <p class="card-text text-white">Ready for some wins? Start tracking, it's easy!</p>
+                        <p>Ready for some wins? Start tracking, it's easy!</p>
                     </div>
                 </div>
+            </div>
+            <div class="col-md-4">
                 <div class="card glass-card-welcome">
                     <img src="asset/value-prop-2-legacy.webp" class="card-img-top" alt="Impact">
                     <div class="card-body text-center">
-                        <p class="card-text text-white">Discover the impact of your food and fitness.</p>
+                        <p>Discover the impact of your food and fitness.</p>
                     </div>
                 </div>
+            </div>
+            <div class="col-md-4">
                 <div class="card glass-card-welcome">
                     <img src="asset/value-prop-3.webp" class="card-img-top" alt="Habit">
                     <div class="card-body text-center">
-                        <p class="card-text text-white">And make mindful eating a habit for life.</p>
+                        <p>And make mindful eating a habit for life.</p>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <div class="text-center mt-5">
-                <a href="name.php" class="btn-continue">Continue</a>
-            </div>
+        <div class="text-center mt-5">
+            <a href="goal.php" class="btn-continue shadow">Continue Your Journey</a>
         </div>
     </div>
 
