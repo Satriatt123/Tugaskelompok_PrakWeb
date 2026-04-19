@@ -39,7 +39,6 @@ if ($jk == 'Perempuan') {
             flex-direction: column;
         }
 
-        /* Navbar Stylish */
         .navbar-custom {
             padding: 15px 50px;
             background: rgba(255, 255, 255, 0.2);
@@ -49,7 +48,6 @@ if ($jk == 'Perempuan') {
 
         .navbar-brand { font-weight: 700; color: var(--text-dark) !important; }
 
-        /* Card Container */
         .auth-section { flex-grow: 1; padding: 40px 0; }
 
         .clear-card {
@@ -59,7 +57,6 @@ if ($jk == 'Perempuan') {
             border: 1px solid white;
         }
 
-        /* Custom Radio Style */
         .goal-option { margin-bottom: 15px; position: relative; }
         .goal-option input[type="radio"] { display: none; }
 
@@ -146,7 +143,7 @@ if ($jk == 'Perempuan') {
                             </div>
 
                             <div class="d-flex gap-3 mt-4 align-items-center">
-                                <a href="welcome.php" class="text-muted text-decoration-none small">Kembali</a>
+                                <a href="personalmatriks.php" class="text-muted text-decoration-none small">Kembali</a>
                                 <button type="submit" class="btn btn-dark btn-next flex-grow-1 text-white">LANJUTKAN</button>
                             </div>
                         </form>

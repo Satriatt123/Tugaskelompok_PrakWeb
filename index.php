@@ -5,17 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RELIFE - Premium Tracking</title>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <style>
         :root {
             --primary-gradient: linear-gradient(135deg, #ffc0cb 0%, #add8e6 100%);
             --glass-white: rgba(255, 255, 255, 0.85);
+            --accent-purple: #a561ff;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: 'Poppins', sans-serif;
@@ -23,61 +22,41 @@
             background-attachment: fixed;
             color: #333;
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
         }
 
-        .navbar {
-            width: 100%;
-            padding: 20px 50px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+        .navbar-custom {
+            padding: 15px 0;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .nav-logo {
+        .navbar-brand {
             font-weight: 700;
-            font-size: 1.5rem;
-            color: #444;
-            letter-spacing: 1px;
+            font-size: 1.6rem;
+            color: #2d3436 !important;
         }
 
-        .nav-links {
-            display: flex;
-            gap: 30px;
-        }
+        .navbar-brand span { color: var(--accent-purple); }
 
-        .nav-links a {
-            text-decoration: none;
-            color: #555;
-            font-weight: 400;
-            font-size: 0.9rem;
+        .nav-link {
+            color: #444 !important;
+            font-weight: 500;
+            margin-left: 20px;
             transition: 0.3s;
         }
 
-        .nav-links a:hover {
-            color: #a561ff;
-        }
+        .nav-link:hover { color: var(--accent-purple) !important; }
 
         header {
-            margin-top: 60px;
+            margin-top: 50px;
             text-align: center;
-            max-width: 800px;
         }
 
         header h1 {
-            font-size: 3rem;
+            font-size: clamp(2rem, 5vw, 3rem); 
             font-weight: 700;
             color: #444;
-            line-height: 1.2;
-            margin-bottom: 10px;
             text-transform: uppercase;
         }
 
@@ -87,12 +66,11 @@
             background: var(--glass-white);
             max-width: 1100px;
             width: 90%;
-            margin: 40px 0;
+            margin: 40px auto; 
             border-radius: 30px;
             overflow: hidden;
             box-shadow: 0 25px 50px rgba(0,0,0,0.1);
             border: 1px solid rgba(255, 255, 255, 0.5);
-            /* Animasi Muncul */
             animation: slideUp 1s ease forwards;
         }
 
@@ -102,14 +80,14 @@
         }
 
         .text-section {
-            padding: 60px;
+            padding: 50px;
+            background: white;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            background: white;
         }
 
-        .badge {
+        .badge-custom {
             background: #f0f0f0;
             color: #888;
             padding: 5px 15px;
@@ -118,39 +96,25 @@
             font-weight: 700;
             width: fit-content;
             margin-bottom: 20px;
-            text-transform: uppercase;
             letter-spacing: 1px;
-        }
-
-        .text-section h2 {
-            font-size: 2.8rem;
-            margin-bottom: 20px;
-            color: #222;
-        }
-
-        .text-section p {
-            line-height: 1.8;
-            color: #666;
-            margin-bottom: 30px;
         }
 
         .btn-changeyourlife {
             text-decoration: none;
-            background: #222; 
-            color: white;
+            background: #2d3436; 
+            color: white !important;
             padding: 16px 35px;
             border-radius: 15px;
             font-weight: 600;
+            transition: all 0.4s ease;
             display: inline-block;
             width: fit-content;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
         .btn-changeyourlife:hover {
-            transform: scale(1.05) translateY(-5px);
-            background: linear-gradient(135deg, #a561ff 0%, #6c5ce7 100%);
-            box-shadow: 0 15px 30px rgba(255, 59, 196, 0.3);
+            background: var(--accent-purple);
+            transform: scale(1.05) translateY(-3px);
+            box-shadow: 0 10px 20px rgba(165, 97, 255, 0.3);
         }
 
         .video-section {
@@ -162,61 +126,61 @@
         }
 
         .video-box {
-            height: 500px;
+            height: 450px;
             overflow: hidden;
             border-radius: 20px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
         }
 
         video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: 0.6s;
         }
 
-        .video-box:hover video {
-            transform: scale(1.1);
+        @media (max-width: 991px) {
+            .main-card { grid-template-columns: 1fr; }
+            .video-section { height: auto; }
+            .nav-link { margin-left: 0; margin-top: 10px; }
         }
 
         footer {
-            margin-top: auto;
-            padding: 40px;
+            text-align: center;
+            padding: 30px;
             color: #777;
             font-size: 0.85rem;
-        }
-
-        @media (max-width: 900px) {
-            .main-card { grid-template-columns: 1fr; }
-            .navbar { padding: 20px; }
-            .nav-links { display: none; }
-            .text-section { padding: 40px; }
-            .video-section { height: 600px; }
         }
     </style>
 </head>
 <body>
 
-    <nav class="navbar">
-        <div class="nav-logo">RELIFE.</div>
-        <div class="nav-links">
-            <a href="#">Home</a>
-            <a href="#">Features</a>
-            <a href="#">About</a>
-            <a href="#">Contact</a>
+    <nav class="navbar navbar-expand-lg navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.php">RE<span>LIFE</span></a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">About</a></li>
+                    <li class="nav-item">
+                        <a class="btn-changeyourlife ms-lg-4 px-4 py-2 mt-2 mt-lg-0" href="login.php" style="font-size: 0.9rem;">LOGIN</a>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <header>
+    <header class="container">
         <h1>Food & Activity <br> Tracking System</h1>
     </header>
 
     <main class="main-card">
         <div class="text-section">
-            <div class="badge">Innovation 2026</div>
-            <h2>Relive Your Health.</h2>
-            <p>Kelola pola makan dan aktivitas harian Anda dengan antarmuka yang intuitif. Fokus pada kesehatan tanpa ribet, karena setiap langkah Anda berharga.</p>
-            
+            <div class="badge-custom">INNOVATION 2026</div>
+            <h2 class="display-5 fw-bold mb-4">Relive Your Health.</h2>
+            <p class="mb-4">Kelola pola makan dan aktivitas harian Anda dengan antarmuka yang intuitif. Fokus pada kesehatan tanpa ribet, karena setiap langkah Anda berharga.</p>
             <a href="pendaftaran.php" class="btn-changeyourlife">CHANGE YOUR LIFE</a>
         </div>
 
@@ -238,5 +202,6 @@
         <p>&copy; 2026 Creative Lab. Crafted for a Better Lifestyle.</p>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
