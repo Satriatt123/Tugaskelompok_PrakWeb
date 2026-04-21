@@ -236,7 +236,7 @@ if ($jk == 'Perempuan') {
                         <hr class="divider">
 
                         <div class="text-center">
-                            <a href="dashboard.php" class="btn-start shadow">MULAI TRACKING</a>
+                            <a href="tracking.php" class="btn-start shadow">MULAI TRACKING</a>
                             <div class="mt-3">
                                 <a href="personalmatriks.php" class="text-muted small text-decoration-none">Hitung ulang</a>
                             </div>
