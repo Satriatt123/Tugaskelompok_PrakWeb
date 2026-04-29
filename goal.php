@@ -143,7 +143,7 @@ if ($jk == 'Perempuan') {
                             </div>
 
                             <div class="d-flex gap-3 mt-4 align-items-center">
-                                <a href="personalmatriks.php" class="text-muted text-decoration-none small">Kembali</a>
+                                <a href="personalmatriks.php?action=reset" class="text-muted text-decoration-none small">Kembali</a>
                                 <button type="submit" class="btn btn-dark btn-next flex-grow-1 text-white">LANJUTKAN</button>
                             </div>
                         </form>
@@ -152,7 +152,7 @@ if ($jk == 'Perempuan') {
             </div>
         </div>
     </div>
-
+<?php include 'footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

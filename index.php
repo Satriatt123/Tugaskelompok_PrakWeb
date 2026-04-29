@@ -21,7 +21,10 @@
             background: var(--primary-gradient);
             background-attachment: fixed;
             color: #333;
-            min-height: 100vh;
+            width: 100%;
+            min-height: 200px;
+            display: flex; 
+            flex-direction: column;
         }
 
         .navbar-custom {
@@ -142,13 +145,6 @@
             .video-section { height: auto; }
             .nav-link { margin-left: 0; margin-top: 10px; }
         }
-
-        footer {
-            text-align: center;
-            padding: 30px;
-            color: #777;
-            font-size: 0.85rem;
-        }
     </style>
 </head>
 <body>
@@ -197,11 +193,7 @@
             </div>
         </div>
     </main> 
-
-    <footer>
-        <p>&copy; 2026 Creative Lab. Crafted for a Better Lifestyle.</p>
-    </footer>
-
+<?php include 'footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

@@ -1,4 +1,5 @@
 <?php
+include_once 'koneksi.php';
 
 $api_key = "7ec5fe9e9336419ab619234773e01783";
 
@@ -8,12 +9,33 @@ $user_gram = 0;
 $search_done = false;
 $error_msg = '';
 
+$quick_foods = [
+    ['label'=>'Nasi Putih',     'query'=>'white rice',      'gram'=>150, 'icon'=>'🍚'],
+    ['label'=>'Ayam Rebus',     'query'=>'boiled chicken',  'gram'=>100, 'icon'=>'🍗'],
+    ['label'=>'Telur Rebus',    'query'=>'boiled egg',      'gram'=>60,  'icon'=>'🥚'],
+    ['label'=>'Tempe',          'query'=>'tempeh',          'gram'=>100, 'icon'=>'🟫'],
+    ['label'=>'Tahu',           'query'=>'tofu',            'gram'=>100, 'icon'=>'⬜'],
+    ['label'=>'Pisang',         'query'=>'banana',          'gram'=>100, 'icon'=>'🍌'],
+    ['label'=>'Roti Tawar',     'query'=>'white bread',     'gram'=>60,  'icon'=>'🍞'],
+    ['label'=>'Oatmeal',        'query'=>'oatmeal',         'gram'=>80,  'icon'=>'🥣'],
+    ['label'=>'Susu Sapi',      'query'=>'whole milk',      'gram'=>250, 'icon'=>'🥛'],
+    ['label'=>'Ubi Rebus',      'query'=>'sweet potato',    'gram'=>150, 'icon'=>'🍠'],
+    ['label'=>'Salmon',         'query'=>'salmon',          'gram'=>100, 'icon'=>'🐟'],
+    ['label'=>'Alpukat',        'query'=>'avocado',         'gram'=>80,  'icon'=>'🥑'],
+];
+
+$meal_types = [
+    'sarapan'     => ['label'=>'Sarapan',     'icon'=>'🌅', 'color'=>'#fdcb6e'],
+    'makan_siang' => ['label'=>'Makan Siang', 'icon'=>'☀️',  'color'=>'#00b894'],
+    'makan_malam' => ['label'=>'Makan Malam', 'icon'=>'🌙', 'color'=>'#6c5ce7'],
+    'camilan'     => ['label'=>'Camilan',     'icon'=>'🍎', 'color'=>'#e17055'],
+];
+
 if (isset($_POST['search'])) {
     $query     = urlencode($_POST['query']);
     $user_gram = (int)$_POST['gram'];
 
     $search_url = "https://api.spoonacular.com/food/ingredients/search?query=$query&number=1&apiKey=$api_key";
-
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $search_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
@@ -24,22 +46,17 @@ if (isset($_POST['search'])) {
     if (!empty($search_data['results'])) {
         $food_id   = $search_data['results'][0]['id'];
         $food_name = ucfirst($search_data['results'][0]['name']);
-
-        $info_url = "https://api.spoonacular.com/food/ingredients/$food_id/information?amount=$user_gram&unit=grams&apiKey=$api_key";
+        $info_url  = "https://api.spoonacular.com/food/ingredients/$food_id/information?amount=$user_gram&unit=grams&apiKey=$api_key";
         curl_setopt($ch, CURLOPT_URL, $info_url);
         $info_res  = curl_exec($ch);
         $info_data = json_decode($info_res, true);
         curl_close($ch);
 
         $nutrients = $info_data['nutrition']['nutrients'] ?? [];
-
         function getNutrient($list, $name) {
-            foreach ($list as $n) {
-                if ($n['name'] === $name) return round($n['amount'], 1);
-            }
+            foreach ($list as $n) if ($n['name'] === $name) return round($n['amount'], 1);
             return 0;
         }
-
         $kalori  = getNutrient($nutrients, 'Calories');
         $protein = getNutrient($nutrients, 'Protein');
         $fat     = getNutrient($nutrients, 'Fat');
@@ -55,164 +72,352 @@ $save_msg = '';
 if (isset($_POST['simpan_makan'])) {
     $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
     if ($user_id) {
-        include_once 'koneksi.php';
         $nm   = mysqli_real_escape_string($conn, $_POST['nama']);
         $gr   = (int)$_POST['gram'];
         $kal  = (float)$_POST['kalori'];
         $prot = (float)$_POST['protein'];
         $tgl  = mysqli_real_escape_string($conn, $_POST['tanggal']);
         $uid  = mysqli_real_escape_string($conn, $user_id);
-
-        $sql = "INSERT INTO food_logs (user_id, nama_makanan, jumlah_gram, kalori, protein, tanggal)
-                VALUES ('$uid', '$nm', '$gr', '$kal', '$prot', '$tgl')";
-        if (mysqli_query($conn, $sql)) {
-            $save_msg = "✅ Berhasil disimpan ke jurnal!";
-        } else {
-            $save_msg = "⚠️ Gagal: " . mysqli_error($conn);
-        }
+        $sql  = "INSERT INTO food_logs (user_id, nama_makanan, jumlah_gram, kalori, protein, tanggal)
+                 VALUES ('$uid', '$nm', '$gr', '$kal', '$prot', '$tgl')";
+        $save_msg = mysqli_query($conn, $sql) ? "✅ Berhasil disimpan!" : "⚠️ Gagal: " . mysqli_error($conn);
     } else {
-        $save_msg = "⚠️ Kamu belum login — data tidak tersimpan ke database.";
+        $save_msg = "⚠️ Belum login — data tidak tersimpan.";
     }
 }
+
+$user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : null;
+$today_foods = [];
+$today_kcal = 0; $today_protein = 0;
+if ($user_id) {
+    $uid  = mysqli_real_escape_string($conn, $user_id);
+    $today = date('Y-m-d');
+    $res  = mysqli_query($conn, "SELECT * FROM food_logs WHERE user_id='$uid' AND tanggal='$today' ORDER BY id DESC");
+    while ($r = mysqli_fetch_assoc($res)) { $today_foods[] = $r; $today_kcal += $r['kalori']; $today_protein += $r['protein']; }
+}
+$target_kcal = isset($_SESSION['tdee']) ? (int)$_SESSION['tdee'] : 2000;
+if (isset($_SESSION['goal'])) {
+    if ($_SESSION['goal'] === 'lose_weight') $target_kcal -= 500;
+    if ($_SESSION['goal'] === 'gain_weight') $target_kcal += 300;
+}
+$log_pct = $target_kcal > 0 ? min(round(($today_kcal / $target_kcal) * 100), 100) : 0;
 ?>
 
 <style>
-.food-grid     { display:grid; grid-template-columns:1fr 1fr; gap:22px; }
-.food-card     { background:#fff; border-radius:18px; padding:26px; box-shadow:0 4px 14px rgba(0,0,0,.05); border:1.5px solid #f2f2f2; }
-.fd-label      { font-size:.78rem; color:#aaa; font-weight:600; text-transform:uppercase; letter-spacing:.5px; margin-bottom:6px; display:block; }
-.fd-input      { width:100%; padding:11px 14px; border:1.5px solid #eee; border-radius:12px; font-family:'Poppins',sans-serif; font-size:.9rem; outline:none; transition:.25s; box-sizing:border-box; }
-.fd-input:focus{ border-color:<?php echo $aksen; ?>; box-shadow:0 0 0 3px <?php echo $aksen; ?>18; }
-.btn-search    { background:<?php echo $aksen; ?>; color:white; border:none; border-radius:12px; padding:12px 22px; font-weight:700; cursor:pointer; transition:.25s; font-family:'Poppins',sans-serif; white-space:nowrap; font-size:.9rem; }
-.btn-search:hover{ transform:translateY(-2px); box-shadow:0 8px 20px <?php echo $aksen; ?>44; }
-.result-card   { background:white; border-radius:16px; border-left:4px solid <?php echo $aksen; ?>; padding:20px; margin-top:18px; }
-.macro-grid    { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin:16px 0; }
-.macro-box     { text-align:center; background:#f8f9fa; border-radius:12px; padding:12px 8px; }
-.macro-val     { font-size:1.2rem; font-weight:700; color:<?php echo $aksen; ?>; }
-.macro-lbl     { font-size:.7rem; color:#aaa; font-weight:600; text-transform:uppercase; margin-top:3px; letter-spacing:.3px; }
-.btn-simpan    { background:#2d3436; color:white; border:none; border-radius:12px; padding:12px; font-weight:700; cursor:pointer; width:100%; transition:.25s; font-family:'Poppins',sans-serif; font-size:.9rem; }
-.btn-simpan:hover{ background:<?php echo $aksen; ?>; transform:translateY(-2px); }
-.fd-select     { appearance:none; background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23aaa' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center white; }
-.save-msg      { border-radius:12px; padding:11px 16px; font-size:.88rem; font-weight:600; margin-bottom:14px; }
-.tips-box      { background:#f8f9fa; border-radius:14px; padding:18px; font-size:.84rem; color:#666; line-height:1.7; }
-.tips-box b    { color:#2d3436; }
-.err-box       { background:#e1705518; border:1.5px solid #e1705533; color:#c0392b; border-radius:12px; padding:12px 16px; font-size:.88rem; font-weight:600; margin-top:14px; }
-@media(max-width:800px){ .food-grid{grid-template-columns:1fr;} .macro-grid{grid-template-columns:repeat(2,1fr);} }
+.ft-wrap *{ box-sizing:border-box; }
+
+.ft-header  { margin-bottom:20px; }
+.ft-title   { margin:0; font-weight:800; color:#1a1a2e; font-size:1.5rem; letter-spacing:-.3px; }
+.ft-sub     { margin:3px 0 0; color:#aaa; font-size:.84rem; }
+
+/* ── Meal type tabs ── */
+.meal-tabs  { display:flex; gap:8px; margin-bottom:22px; flex-wrap:wrap; }
+.meal-tab   { display:inline-flex; align-items:center; gap:7px; padding:9px 18px; border-radius:50px;
+              border:1.5px solid #eee; background:#fff; cursor:pointer; font-weight:600;
+              font-size:.83rem; transition:all .2s; color:#777; white-space:nowrap; }
+.meal-tab:hover { border-color:#ddd; transform:translateY(-1px); }
+.meal-tab.active { color:#fff; border-color:transparent; box-shadow:0 4px 14px rgba(0,0,0,.15); }
+
+.ft-grid    { display:grid; grid-template-columns:1.15fr 1fr; gap:20px; }
+
+.ft-card    { background:#fff; border-radius:18px; padding:24px; box-shadow:0 4px 18px rgba(0,0,0,.05); border:1.5px solid #f0f0f0; margin-bottom:16px; }
+.ft-card:last-child { margin-bottom:0; }
+.ft-card-title { font-weight:700; color:#1a1a2e; font-size:.97rem; margin:0 0 18px; display:flex; align-items:center; gap:8px; }
+
+.fd-label   { font-size:.74rem; color:#aaa; font-weight:700; text-transform:uppercase; letter-spacing:.6px; margin-bottom:7px; display:block; }
+.fd-input   { width:100%; padding:11px 14px; border:1.5px solid #eee; border-radius:12px;
+              font-family:'Poppins',sans-serif; font-size:.9rem; outline:none; transition:.25s; background:#fafafa; }
+.fd-input:focus { border-color:<?php echo $aksen; ?>; box-shadow:0 0 0 3px <?php echo $aksen; ?>18; background:#fff; }
+
+.portion-row { display:flex; gap:7px; flex-wrap:wrap; margin-bottom:14px; }
+.portion-btn { padding:6px 14px; border:1.5px solid #eee; border-radius:8px; background:#f8f9fa;
+               cursor:pointer; font-size:.8rem; font-weight:700; color:#666; transition:.2s; }
+.portion-btn:hover, .portion-btn.active { background:<?php echo $aksen; ?>; color:#fff; border-color:<?php echo $aksen; ?>; }
+
+.btn-search { background:<?php echo $aksen; ?>; color:#fff; border:none; border-radius:12px; padding:12px 22px;
+              font-weight:700; cursor:pointer; transition:.25s; font-family:'Poppins',sans-serif; font-size:.9rem; width:100%; margin-top:6px; }
+.btn-search:hover { transform:translateY(-2px); box-shadow:0 8px 20px <?php echo $aksen; ?>44; }
+.btn-search:active { transform:translateY(0); }
+
+.result-reveal { animation:slideUp .35s ease; }
+@keyframes slideUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+
+.result-food-name { font-weight:800; font-size:1.05rem; color:#1a1a2e; }
+.result-sub       { font-size:.78rem; color:#aaa; margin-top:2px; }
+.result-kcal-badge { background:<?php echo $aksen; ?>15; border:1.5px solid <?php echo $aksen; ?>33;
+                     border-radius:10px; padding:5px 14px; font-weight:800; color:<?php echo $aksen; ?>; font-size:.9rem; }
+
+.macro-bars  { margin:16px 0; display:flex; flex-direction:column; gap:10px; }
+.macro-row   { display:flex; align-items:center; gap:10px; }
+.macro-label { width:80px; font-size:.76rem; font-weight:700; color:#888; text-transform:uppercase; flex-shrink:0; }
+.macro-track { flex:1; height:7px; background:#f0f0f0; border-radius:50px; overflow:hidden; }
+.macro-fill  { height:100%; border-radius:50px; transition:width 1s ease; }
+.macro-value { width:55px; text-align:right; font-size:.82rem; font-weight:700; color:#444; flex-shrink:0; }
+
+.save-section { margin-top:16px; padding-top:16px; border-top:1.5px dashed #f0f0f0; }
+.btn-save    { background:#1a1a2e; color:#fff; border:none; border-radius:12px; padding:12px;
+               font-weight:700; cursor:pointer; width:100%; transition:.25s; font-family:'Poppins',sans-serif; font-size:.9rem; }
+.btn-save:hover { background:<?php echo $aksen; ?>; transform:translateY(-2px); }
+
+.msg-ok  { background:#00b89412; border:1.5px solid #00b89433; color:#00b894; border-radius:12px; padding:11px 16px; font-size:.87rem; font-weight:600; margin-bottom:16px; }
+.msg-err { background:#e1705512; border:1.5px solid #e1705533; color:#e17055; border-radius:12px; padding:11px 16px; font-size:.87rem; font-weight:600; margin-bottom:16px; }
+.err-inline { background:#e1705512; border:1.5px solid #e1705533; color:#c0392b; border-radius:12px; padding:12px 16px; font-size:.87rem; font-weight:600; margin-top:14px; }
+
+.qf-grid    { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; }
+.qf-chip    { display:flex; flex-direction:column; align-items:center; gap:4px; padding:11px 6px;
+              background:#f8f9fa; border:1.5px solid #f0f0f0; border-radius:13px; cursor:pointer;
+              transition:.2s; text-align:center; }
+.qf-chip:hover { background:<?php echo $aksen; ?>10; border-color:<?php echo $aksen; ?>; transform:translateY(-2px); box-shadow:0 4px 12px <?php echo $aksen; ?>20; }
+.qf-chip:hover .qf-name { color:<?php echo $aksen; ?>; }
+.qf-icon    { font-size:1.4rem; line-height:1; }
+.qf-name    { font-size:.72rem; font-weight:700; color:#555; line-height:1.2; }
+.qf-gram    { font-size:.66rem; color:#aaa; font-weight:600; }
+
+.log-progress-bar { background:#f0f0f0; border-radius:50px; height:6px; margin:8px 0 14px; overflow:hidden; }
+.log-progress-fill { height:100%; border-radius:50px; background:linear-gradient(90deg,<?php echo $aksen; ?>,<?php echo $aksen; ?>99); }
+.log-item   { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid #f5f5f5; }
+.log-item:last-child { border-bottom:none; }
+.log-dot    { width:8px; height:8px; border-radius:50%; background:<?php echo $aksen; ?>; flex-shrink:0; }
+.log-food-name { font-weight:600; color:#2d3436; font-size:.86rem; flex:1; }
+.log-gram   { font-size:.75rem; color:#aaa; font-weight:600; }
+.log-kcal   { background:#fff3f0; color:#e17055; padding:3px 10px; border-radius:7px; font-weight:700; font-size:.78rem; flex-shrink:0; }
+.log-delete { color:#ddd; font-size:.95rem; text-decoration:none; transition:.2s; flex-shrink:0; }
+.log-delete:hover { color:#e17055; }
+
+.log-empty  { text-align:center; padding:24px 0; color:#ccc; font-size:.87rem; }
+
+.day-total  { display:flex; justify-content:space-between; align-items:center; padding:12px 16px;
+              background:linear-gradient(135deg,<?php echo $aksen; ?>,<?php echo $aksen; ?>bb);
+              border-radius:13px; color:#fff; margin-bottom:14px; }
+.day-total-num { font-size:1.5rem; font-weight:800; line-height:1; }
+.day-total-lbl { font-size:.72rem; opacity:.8; font-weight:600; text-transform:uppercase; margin-top:3px; }
+
+.tips-card  { background:linear-gradient(135deg,#f8f9fa,#fff); }
+.tip-row    { display:flex; gap:10px; align-items:flex-start; padding:8px 0; border-bottom:1px solid #f0f0f0; font-size:.84rem; color:#555; }
+.tip-row:last-child { border-bottom:none; }
+.tip-emoji  { font-size:1rem; flex-shrink:0; margin-top:1px; }
+
+@media(max-width:850px){
+  .ft-grid  { grid-template-columns:1fr; }
+  .qf-grid  { grid-template-columns:repeat(4,1fr); }
+}
+@media(max-width:500px){
+  .meal-tabs { gap:6px; }
+  .meal-tab  { padding:7px 12px; font-size:.78rem; }
+  .qf-grid   { grid-template-columns:repeat(3,1fr); }
+}
 </style>
 
-<div style="margin-bottom:28px;">
-  <h2 style="margin:0;font-weight:700;color:#2d3436;">Food Tracking 🍽️</h2>
-  <p style="margin:4px 0 0;color:#aaa;font-size:.88rem;">Cari makanan dan catat asupan kalorimu hari ini.</p>
-</div>
+<form id="quickForm" method="POST" style="display:none;">
+  <input type="hidden" id="qf_query" name="query">
+  <input type="hidden" id="qf_gram"  name="gram">
+  <button type="submit" name="search"></button>
+</form>
 
-<?php if($save_msg): ?>
-<div class="save-msg" style="background:<?php echo strpos($save_msg,'✅')!==false ? '#00b89415' : '#e1705515'; ?>; border:1.5px solid <?php echo strpos($save_msg,'✅')!==false ? '#00b89433' : '#e1705533'; ?>; color:<?php echo strpos($save_msg,'✅')!==false ? '#00b894' : '#e17055'; ?>">
-  <?php echo htmlspecialchars($save_msg); ?>
-</div>
-<?php endif; ?>
+<div class="ft-wrap">
+  <div class="ft-header">
+    <h2 class="ft-title">Food Tracking 🍽️</h2>
+    <p class="ft-sub">Cari makanan & catat asupan harianmu dengan mudah.</p>
+  </div>
 
-<div class="food-grid">
-  <div>
-    <div class="food-card">
-      <p style="font-weight:700;color:#2d3436;font-size:1rem;margin:0 0 18px">🔍 Cari Nutrisi Makanan</p>
-      <p style="font-size:.83rem;color:#aaa;margin:0 0 18px;">Gunakan nama makanan dalam Bahasa Inggris untuk hasil terbaik.</p>
+  <?php if($save_msg): ?>
+  <div class="<?php echo strpos($save_msg,'✅')!==false ? 'msg-ok' : 'msg-err'; ?>"><?php echo htmlspecialchars($save_msg); ?></div>
+  <?php endif; ?>
 
-      <form method="POST">
-        <div style="margin-bottom:14px;">
-          <span class="fd-label">Nama Makanan</span>
-          <input type="text" name="query" class="fd-input" placeholder="Contoh: rice, chicken breast, banana..." 
-                 value="<?php echo isset($_POST['query']) ? htmlspecialchars($_POST['query']) : ''; ?>" required>
-        </div>
-        <div style="display:flex;gap:10px;align-items:flex-end;">
-          <div style="flex:1;">
-            <span class="fd-label">Berat (gram)</span>
-            <input type="number" name="gram" class="fd-input" placeholder="100" min="1" max="5000"
-                   value="<?php echo $user_gram ?: ''; ?>" required>
-          </div>
-          <button type="submit" name="search" class="btn-search">Cari</button>
-        </div>
-      </form>
+  <div class="meal-tabs" id="mealTabs">
+    <?php foreach($meal_types as $key => $mt): ?>
+    <div class="meal-tab" id="tab_<?php echo $key; ?>" data-color="<?php echo $mt['color']; ?>"
+         onclick="selectMeal('<?php echo $key; ?>','<?php echo $mt['color']; ?>')">
+      <?php echo $mt['icon'] . ' ' . $mt['label']; ?>
+    </div>
+    <?php endforeach; ?>
+  </div>
 
-      <?php if($error_msg): ?>
-        <div class="err-box">❌ <?php echo htmlspecialchars($error_msg); ?></div>
-      <?php endif; ?>
+  <div class="ft-grid">
+    <div>
+      <div class="ft-card">
+        <p class="ft-card-title">🔍 Cari Nutrisi Makanan</p>
+        <p style="font-size:.82rem;color:#aaa;margin:-10px 0 16px">Gunakan nama dalam Bahasa Inggris untuk hasil terbaik.</p>
 
-      <?php if($search_done): ?>
-      <div class="result-card">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">
-          <div>
-            <div style="font-weight:700;font-size:1rem;color:#2d3436;">🍎 <?php echo htmlspecialchars($food_name); ?></div>
-            <div style="font-size:.8rem;color:#aaa;">Per <?php echo $user_gram; ?> gram</div>
-          </div>
-          <div style="background:<?php echo $aksen; ?>15;border:1.5px solid <?php echo $aksen; ?>33;border-radius:10px;padding:5px 14px;font-weight:700;color:<?php echo $aksen; ?>;font-size:.88rem;"><?php echo $kalori; ?> kcal</div>
-        </div>
-
-        <div class="macro-grid">
-          <div class="macro-box">
-            <div class="macro-val"><?php echo $kalori; ?></div>
-            <div class="macro-lbl">🔥 Kalori</div>
-          </div>
-          <div class="macro-box">
-            <div class="macro-val"><?php echo $protein; ?>g</div>
-            <div class="macro-lbl">💪 Protein</div>
-          </div>
-          <div class="macro-box">
-            <div class="macro-val"><?php echo $fat; ?>g</div>
-            <div class="macro-lbl">🥑 Lemak</div>
-          </div>
-          <div class="macro-box">
-            <div class="macro-val"><?php echo $carbs; ?>g</div>
-            <div class="macro-lbl">🍞 Karbo</div>
-          </div>
-        </div>
-
-        <form method="POST">
-          <input type="hidden" name="simpan_makan" value="1">
-          <input type="hidden" name="nama"    value="<?php echo htmlspecialchars($food_name); ?>">
-          <input type="hidden" name="kalori"  value="<?php echo $kalori; ?>">
-          <input type="hidden" name="protein" value="<?php echo $protein; ?>">
-          <input type="hidden" name="gram"    value="<?php echo $user_gram; ?>">
-
-          <div style="margin-bottom:12px;">
-            <span class="fd-label">Catat untuk</span>
-            <select name="tanggal" class="fd-input fd-select">
-              <option value="<?php echo date('Y-m-d'); ?>">Hari Ini (<?php echo date('d M Y'); ?>)</option>
-              <option value="<?php echo date('Y-m-d', strtotime('-1 day')); ?>">Kemarin (<?php echo date('d M Y', strtotime('-1 day')); ?>)</option>
-            </select>
+        <form method="POST" id="searchForm">
+          <div style="margin-bottom:14px;">
+            <span class="fd-label">Nama Makanan</span>
+            <input type="text" name="query" id="queryInput" class="fd-input"
+                   placeholder="Contoh: chicken breast, white rice..."
+                   value="<?php echo isset($_POST['query']) ? htmlspecialchars($_POST['query']) : ''; ?>" required>
           </div>
 
-          <button type="submit" class="btn-simpan">💾 Simpan ke Jurnal</button>
+          <div style="margin-bottom:14px;">
+            <span class="fd-label">Porsi (gram)</span>
+            <div class="portion-row" id="portionBtns">
+              <?php foreach([50,100,150,200,250] as $pg): ?>
+              <button type="button" class="portion-btn <?php echo ($user_gram==$pg)?'active':''; ?>"
+                      onclick="setPortion(<?php echo $pg; ?>, this)"><?php echo $pg; ?>g</button>
+              <?php endforeach; ?>
+              <span style="font-size:.78rem;color:#aaa;align-self:center;font-weight:600;">Custom:</span>
+            </div>
+            <input type="number" name="gram" id="gramInput" class="fd-input" placeholder="Masukkan gram..."
+                   min="1" max="5000" value="<?php echo $user_gram ?: ''; ?>" required
+                   oninput="clearPortionActive()">
+          </div>
+
+          <button type="submit" name="search" class="btn-search">🔍 Cari Nutrisi</button>
         </form>
-      </div>
-      <?php endif; ?>
-    </div>
-  </div>
 
-  <div>
-    <div class="food-card" style="margin-bottom:20px;">
-      <p style="font-weight:700;color:#2d3436;font-size:1rem;margin:0 0 14px">💡 Contoh Pencarian</p>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;">
-        <?php
-        $examples = ['Rice','Chicken breast','Egg','Banana','Milk','Tempeh','Tofu','Avocado','Oatmeal','Salmon'];
-        foreach($examples as $ex):
-        ?>
-        <span onclick="document.querySelector('[name=query]').value='<?php echo $ex; ?>';document.querySelector('[name=gram]').value=100;" 
-              style="background:#f0f0f0;border-radius:50px;padding:5px 14px;font-size:.8rem;cursor:pointer;transition:.2s;font-weight:500;"
-              onmouseover="this.style.background='<?php echo $aksen; ?>20';this.style.color='<?php echo $aksen; ?>'"
-              onmouseout="this.style.background='#f0f0f0';this.style.color='inherit'">
-          <?php echo $ex; ?>
-        </span>
-        <?php endforeach; ?>
+        <?php if($error_msg): ?>
+        <div class="err-inline">❌ <?php echo htmlspecialchars($error_msg); ?></div>
+        <?php endif; ?>
+
+        <?php if($search_done): ?>
+        <div style="margin-top:20px;padding-top:18px;border-top:1.5px solid #f0f0f0;" class="result-reveal">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:4px;">
+            <div>
+              <div class="result-food-name">🍎 <?php echo htmlspecialchars($food_name); ?></div>
+              <div class="result-sub">Per <?php echo $user_gram; ?>g · data dari Spoonacular</div>
+            </div>
+            <div class="result-kcal-badge"><?php echo $kalori; ?> kcal</div>
+          </div>
+
+          <div class="macro-bars">
+            <?php
+            $macros = [
+              ['label'=>'🔥 Kalori', 'val'=>$kalori,  'unit'=>'kcal', 'max'=>800,  'color'=>'#e17055'],
+              ['label'=>'💪 Protein','val'=>$protein, 'unit'=>'g',    'max'=>100,  'color'=>'#6c5ce7'],
+              ['label'=>'🥑 Lemak',  'val'=>$fat,     'unit'=>'g',    'max'=>80,   'color'=>'#00b894'],
+              ['label'=>'🍞 Karbo',  'val'=>$carbs,   'unit'=>'g',    'max'=>150,  'color'=>'#fdcb6e'],
+            ];
+            foreach($macros as $m):
+              $pct = min(round(($m['val']/$m['max'])*100), 100);
+            ?>
+            <div class="macro-row">
+              <span class="macro-label"><?php echo $m['label']; ?></span>
+              <div class="macro-track"><div class="macro-fill" style="width:<?php echo $pct; ?>%;background:<?php echo $m['color']; ?>;"></div></div>
+              <span class="macro-value"><?php echo $m['val']; ?><?php echo $m['unit']; ?></span>
+            </div>
+            <?php endforeach; ?>
+          </div>
+
+          <div class="save-section">
+            <form method="POST">
+              <input type="hidden" name="simpan_makan" value="1">
+              <input type="hidden" name="nama"    value="<?php echo htmlspecialchars($food_name); ?>">
+              <input type="hidden" name="kalori"  value="<?php echo $kalori; ?>">
+              <input type="hidden" name="protein" value="<?php echo $protein; ?>">
+              <input type="hidden" name="gram"    value="<?php echo $user_gram; ?>">
+              <div style="margin-bottom:12px;">
+                <span class="fd-label">Tanggal</span>
+                <input type="date" name="tanggal" class="fd-input"
+                       value="<?php echo date('Y-m-d'); ?>"
+                       max="<?php echo date('Y-m-d'); ?>" required>
+              </div>
+              <button type="submit" class="btn-save">💾 Simpan ke Jurnal</button>
+            </form>
+          </div>
+        </div>
+        <?php endif; ?>
       </div>
     </div>
 
-    <div class="food-card">
-      <p style="font-weight:700;color:#2d3436;font-size:1rem;margin:0 0 14px">📚 Panduan Nutrisi</p>
-      <div class="tips-box">
-        <b>🔥 Kalori</b> — energi total dari makanan.<br>
-        <b>💪 Protein</b> — untuk membangun dan memperbaiki otot. Kebutuhan umum: <b>1,2–2g/kg</b> berat badan.<br>
-        <b>🥑 Lemak</b> — lemak sehat mendukung hormon dan penyerapan vitamin. Targetkan <b>20–35%</b> dari total kalori.<br>
-        <b>🍞 Karbohidrat</b> — sumber energi utama. Pilih karbohidrat kompleks (nasi merah, oat, ubi).
+    <div>
+      <div class="ft-card">
+        <p class="ft-card-title">⚡ Makanan Populer</p>
+        <p style="font-size:.8rem;color:#aaa;margin:-10px 0 14px">Klik untuk langsung mencari nutrisi.</p>
+        <div class="qf-grid">
+          <?php foreach($quick_foods as $qf): ?>
+          <div class="qf-chip" onclick="quickSearch('<?php echo $qf['query']; ?>',<?php echo $qf['gram']; ?>)" title="<?php echo $qf['query']; ?> · <?php echo $qf['gram']; ?>g">
+            <span class="qf-icon"><?php echo $qf['icon']; ?></span>
+            <span class="qf-name"><?php echo $qf['label']; ?></span>
+            <span class="qf-gram"><?php echo $qf['gram']; ?>g</span>
+          </div>
+          <?php endforeach; ?>
+        </div>
+      </div>
+
+      <div class="ft-card">
+        <p class="ft-card-title">📋 Log Hari Ini</p>
+
+        <div class="day-total">
+          <div>
+            <div class="day-total-num"><?php echo number_format($today_kcal); ?> <span style="font-size:.85rem;opacity:.8">kcal</span></div>
+            <div class="day-total-lbl">dari target <?php echo number_format($target_kcal); ?> kcal</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-size:1.3rem;font-weight:800;"><?php echo $log_pct; ?>%</div>
+            <div style="font-size:.72rem;opacity:.8;">Protein: <?php echo round($today_protein,1); ?>g</div>
+          </div>
+        </div>
+        <div class="log-progress-bar"><div class="log-progress-fill" style="width:<?php echo $log_pct; ?>%"></div></div>
+
+        <?php if(empty($today_foods)): ?>
+        <div class="log-empty">
+          <div style="font-size:2rem;margin-bottom:8px;">🍽️</div>
+          Belum ada makanan tercatat hari ini.<br>
+          <span style="font-size:.78rem;">Gunakan form di kiri untuk menambahkan!</span>
+        </div>
+        <?php else: ?>
+        <div style="max-height:240px;overflow-y:auto;">
+          <?php foreach($today_foods as $f): ?>
+          <div class="log-item">
+            <div class="log-dot"></div>
+            <div class="log-food-name"><?php echo htmlspecialchars(ucfirst($f['nama_makanan'])); ?></div>
+            <span class="log-gram"><?php echo $f['jumlah_gram']; ?>g</span>
+            <span class="log-kcal"><?php echo number_format($f['kalori']); ?></span>
+            <a href="delete_log.php?id=<?php echo $f['id']; ?>&type=food"
+               onclick="return confirm('Hapus item ini?')" class="log-delete" title="Hapus">🗑️</a>
+          </div>
+          <?php endforeach; ?>
+        </div>
+        <?php endif; ?>
+      </div>
+
+      <div class="ft-card tips-card">
+        <p class="ft-card-title">💡 Panduan Nutrisi</p>
+        <div>
+          <div class="tip-row"><span class="tip-emoji">🔥</span><span><b>Kalori</b> — energi total dari makanan.</span></div>
+          <div class="tip-row"><span class="tip-emoji">💪</span><span><b>Protein</b> — bangun otot. Target: <b>1.2–2g/kg</b> berat badan.</span></div>
+          <div class="tip-row"><span class="tip-emoji">🥑</span><span><b>Lemak sehat</b> — dukung hormon & vitamin. Targetkan <b>20–35%</b> kalori.</span></div>
+          <div class="tip-row"><span class="tip-emoji">🍞</span><span><b>Karbohidrat</b> — sumber energi. Pilih yang kompleks (nasi merah, oat, ubi).</span></div>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+<script>
+let activeMealColor = null;
+function selectMeal(key, color) {
+    document.querySelectorAll('.meal-tab').forEach(t => {
+        t.classList.remove('active');
+        t.style.background = '';
+        t.style.color = '';
+    });
+    const tab = document.getElementById('tab_' + key);
+    tab.classList.add('active');
+    tab.style.background = color;
+    activeMealColor = color;
+    document.querySelectorAll('.btn-search,.btn-save').forEach(b => b.style.background = color);
+}
+
+function setPortion(gram, btn) {
+    document.getElementById('gramInput').value = gram;
+    document.querySelectorAll('.portion-btn').forEach(b => b.classList.remove('active'));
+    if(btn) btn.classList.add('active');
+}
+function clearPortionActive() {
+    document.querySelectorAll('.portion-btn').forEach(b => b.classList.remove('active'));
+}
+
+function quickSearch(name, gram) {
+    document.getElementById('qf_query').value = name;
+    document.getElementById('qf_gram').value  = gram;
+    document.getElementById('quickForm').submit();
+}
+
+(function() {
+    const h = new Date().getHours();
+    if      (h < 10) selectMeal('sarapan',     '<?php echo $meal_types["sarapan"]["color"]; ?>');
+    else if (h < 14) selectMeal('makan_siang', '<?php echo $meal_types["makan_siang"]["color"]; ?>');
+    else if (h < 19) selectMeal('makan_malam', '<?php echo $meal_types["makan_malam"]["color"]; ?>');
+    else             selectMeal('camilan',      '<?php echo $meal_types["camilan"]["color"]; ?>');
+})();
+</script>

@@ -1,5 +1,6 @@
 <?php
 session_start();
+include 'koneksi.php';
 
 $nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'Teman';
 $jk   = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
@@ -37,7 +38,7 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
             height: 100vh;
         }
         .sidebar {
-            width: 260px; /* Lebar Sidebar Tetap */
+            width: 260px;
             background: <?php echo $warna_bg_sidebar ?>;
             color: white;
             padding: 30px 20px;
@@ -94,11 +95,9 @@ $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
         <main class="content-area">
             <?php 
-                // Pengamanan (Whitelisting)
                 $allowed_pages = ['dashboard', 'food', 'activity', 'goalsetting'];
                 
                 if (in_array($page, $allowed_pages)) {
-                    // Pastikan folder 'page/' ada
                     $file = "page/" . $page . ".php";
                     if (file_exists($file)) {
                         include($file);

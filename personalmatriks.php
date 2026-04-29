@@ -1,5 +1,22 @@
 <?php
 session_start();
+if (isset($_GET['action']) && $_GET['action'] == 'reset') {
+    unset($_SESSION['tdee']);
+    unset($_SESSION['bmr']);
+    unset($_SESSION['goal']);
+}
+if (isset($_SESSION['tdee']) && $_SESSION['tdee'] > 0) {
+    header("Location: tracking.php?page=dashboard");
+    exit();
+}
+
+$nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'Teman';
+
+
+if (isset($_SESSION['tdee']) && $_SESSION['tdee'] > 0) {
+    header("Location: tracking.php?page=dashboard");
+    exit();
+}
 $nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'Teman';
 $jk_user = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
 
@@ -168,7 +185,7 @@ if ($jk_user == 'Perempuan') {
 
                             <button type="submit" class="btn-next shadow-sm">LANJUT KE TARGET</button>
                             <div class="text-center mt-3">
-                                <a href="welcome.php" class="text-muted small text-decoration-none">Kembali</a>
+                                <a href="welcome.php?action=reset" class="text-muted small text-decoration-none">Kembali</a>
                             </div>
                         </form>
                     </div>
@@ -176,6 +193,6 @@ if ($jk_user == 'Perempuan') {
             </div>
         </div>
     </div>
-
+<?php include 'footer.php'; ?>
 </body>
 </html>

@@ -3,8 +3,7 @@ session_start();
 $nama = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'User';
 $jk_user = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
 
-// Logika warna dinamis untuk branding
-$aksen = "#a561ff"; // Default Ungu
+$aksen = "#a561ff";
 if ($jk_user == 'Perempuan') $aksen = "#ff3bc4";
 if ($jk_user == 'Laki-Laki') $aksen = "#0984e3";
 ?>
@@ -19,6 +18,7 @@ if ($jk_user == 'Laki-Laki') $aksen = "#0984e3";
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     
     <style>
+        *{outline : 2px solid red;}
         body {
             background: linear-gradient(135deg, #ffc0cb 0%, #add8e6 100%);
             background-attachment: fixed;
@@ -114,6 +114,10 @@ if ($jk_user == 'Laki-Laki') $aksen = "#0984e3";
             <a href="personalmatriks.php" class="btn-journey shadow">CONTINUE JOURNEY</a>
         </div>
     </div>
+    <?php include 'footer.php'; ?>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
 </body>
 </html>

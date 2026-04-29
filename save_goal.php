@@ -1,5 +1,6 @@
 <?php
 session_start();
+include 'koneksi.php';
 
 $nama  = isset($_SESSION['nama_user']) ? $_SESSION['nama_user'] : 'Teman';
 $jk    = isset($_SESSION['tema_user']) ? $_SESSION['tema_user'] : 'netral';
@@ -8,6 +9,11 @@ $bmr   = isset($_SESSION['bmr'])       ? $_SESSION['bmr']       : 0;
 
 $goal  = isset($_POST['goal']) ? $_POST['goal'] : 'maintain';
 $_SESSION['goal'] = $goal;
+
+if(isset($_SESSION['user_id'])) {
+    $user_id = $_SESSION['user_id'];
+    mysqli_query($conn, "UPDATE users SET goal='$goal' WHERE id='$user_id'");
+}
 
 if ($goal == 'lose_weight') {
     $target = $tdee - 500;
@@ -238,7 +244,7 @@ if ($jk == 'Perempuan') {
                         <div class="text-center">
                             <a href="tracking.php" class="btn-start shadow">MULAI TRACKING</a>
                             <div class="mt-3">
-                                <a href="personalmatriks.php" class="text-muted small text-decoration-none">Hitung ulang</a>
+                                <a href="personalmatriks.php?action=reset" class="text-muted small text-decoration-none">Hitung ulang</a>
                             </div>
                         </div>
 
@@ -247,7 +253,7 @@ if ($jk == 'Perempuan') {
             </div>
         </div>
     </div>
-
+<?php include 'footer.php'; ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

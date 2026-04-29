@@ -17,7 +17,8 @@
             font-family: 'Poppins', sans-serif;
             background: var(--primary-gradient);
             background-attachment: fixed;
-            min-height: 100vh;
+            width: 100%;
+            min-height: 200px;
         }
 
         .navbar-custom {
